@@ -18,40 +18,40 @@ Y las pruebas con:
 HORA_DE_APERTURA = 7
 HORA_DE_CIERRE = 21
 
+from dataclasses import dataclass
 
-# TODO 1: convierte FranjaHoraria en un value object inmutable con
-# @dataclass(frozen=True) (from dataclasses import dataclass), con tres
-# campos: fecha (str), inicio (int) y fin (int). Borra el __init__: el
-# decorador lo genera.
+@dataclass(frozen=True)
 class FranjaHoraria:
-    def __init__(self, fecha, inicio, fin):
-        self.fecha = fecha
-        self.inicio = inicio
-        self.fin = fin
+    fecha: str
+    inicio: int
+    fin: int
 
-    # TODO 2: un metodo __post_init__(self) que lance
-    # ValueError("franja invalida") si inicio no es menor que fin, si
-    # inicio es menor que HORA_DE_APERTURA o si fin es mayor que
-    # HORA_DE_CIERRE.
+    def __post_init__(self):
+        if self.inicio >= self.fin:
+            raise ValueError("la franja termina antes de empezar")
+        if self.inicio < HORA_DE_APERTURA or self.fin > HORA_DE_CIERRE:
+            raise ValueError("fuera del horario")
 
     def duracion(self):
         return self.fin - self.inicio
 
     def se_solapa_con(self, otra):
-        # TODO 3: True si las dos franjas son del mismo dia y comparten al
-        # menos una parte de su intervalo. De 18 a 19 y de 19 a 20 no se
-        # solapan.
-        return False
+        return self.fecha == otra.fecha and self.inicio < otra.fin and otra.inicio < self.fin
 
 
+@dataclass
 class Reserva:
-    def __init__(self, id_reserva, estudiante, franja):
-        self.id = id_reserva
-        self.estudiante = estudiante
-        self.franja = franja
+    id: str
+    estudiante: str
+    franja: FranjaHoraria
 
-    # TODO 4: un metodo __eq__(self, otra) que compare solo los ids, y un
-    # metodo __hash__(self) que devuelva hash(self.id).
+    def __eq__(self, otra):
+        if not isinstance(otra, Reserva):
+            return NotImplemented
+        return self.id == otra.id
+
+    def __hash__(self):
+        return hash(self.id)
 
 
 if __name__ == "__main__":
@@ -66,6 +66,10 @@ if __name__ == "__main__":
     otra_igualita = Reserva("r-2", "ana", franja_a)
     print("r-1 == r-1 movida:", reserva == la_misma_leida_otra_vez)
     print("r-1 == r-2 en la misma franja:", reserva == otra_igualita)
-
-    franja_invalida = FranjaHoraria("2026-11-10", 20, 18)
-    print("Franja de 20 a 18, duracion:", franja_invalida.duracion())
+    try:
+        franja_invalida = FranjaHoraria("2026-11-10", 20, 18)
+        print("Franja de 20 a 18, duracion:", franja_invalida.duracion())
+    except ValueError as error:
+        print("Franja de 20 a 18 rechazada:", error)
+        
+        
