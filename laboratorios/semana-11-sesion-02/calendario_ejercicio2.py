@@ -67,19 +67,19 @@ class CalendarioDeCancha:
 
     def mover(self, id_reserva, nuevo_inicio, nuevo_fin):
 
-        if id_reserva not in self._reservas:                          # ← CAMBIO 1
-            raise ValueError("reserva desconocida")                   # ← CAMBIO 2
+        if id_reserva not in self._reservas:                          
+            raise ValueError("reserva desconocida")                   
 
         reserva = self._reservas[id_reserva]
-        try:                                                          # ← CAMBIO 3
+        try:                                                          
             nueva_franja = FranjaHoraria(self.fecha, nuevo_inicio, nuevo_fin)
         except ValueError:
             raise ValueError("franja invalida")
 
-        if self.choca_con_otra(nueva_franja, ignorar=id_reserva):     # ← CAMBIO 4
+        if self.choca_con_otra(nueva_franja, ignorar=id_reserva):     
             raise ValueError("franja ocupada")
 
-        horas_actuales = self.horas_de(reserva.estudiante) - reserva.franja.duracion()   # ← CAMBIO 5
+        horas_actuales = self.horas_de(reserva.estudiante) - reserva.franja.duracion()   
 
         if horas_actuales + nueva_franja.duracion() > MAXIMO_HORAS_POR_ESTUDIANTE:
             raise ValueError("limite de horas alcanzado")
